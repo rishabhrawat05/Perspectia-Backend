@@ -66,7 +66,8 @@ public class WebConfig {
 
         config.setAllowedOriginPatterns(Arrays.asList(
                 "http://localhost:5173",
-                "http://localhost:3000"
+                "http://localhost:3000",
+                "https://perspectia-frontend.vercel.app"
         ));
 
         config.setAllowedHeaders(Arrays.asList(
