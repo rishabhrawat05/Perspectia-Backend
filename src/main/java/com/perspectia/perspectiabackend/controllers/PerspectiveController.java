@@ -32,4 +32,9 @@ public class PerspectiveController {
         Pageable pageable = PageRequest.of(page, size);
         return perspectiveService.getAllPerspectives(pageable, topicId);
     }
+
+    @GetMapping("/get-by-user")
+    public ResponseEntity<PerspectiveResponse> getPerspectiveByUser(@RequestParam UUID userId, @RequestParam UUID topicId) {
+        return ResponseEntity.ok(perspectiveService.getPerspectiveByUser(userId, topicId));
+    }
 }

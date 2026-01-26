@@ -1,5 +1,6 @@
 package com.perspectia.perspectiabackend.services;
 
+import com.perspectia.perspectiabackend.exceptions.PerspectiveNotFoundException;
 import com.perspectia.perspectiabackend.exceptions.TopicNotFoundException;
 import com.perspectia.perspectiabackend.exceptions.UserNotFoundException;
 import com.perspectia.perspectiabackend.models.Perspective;
@@ -58,6 +59,9 @@ public class PerspectiveService {
         return perspectives;
     }
 
+    public PerspectiveResponse getPerspectiveByUser(UUID userId, UUID topicId) {
+        return perspectiveRepository.findByUserId(userId, topicId).orElseThrow(() -> new PerspectiveNotFoundException("Perspective Not Found"));
+    }
 
 
 
