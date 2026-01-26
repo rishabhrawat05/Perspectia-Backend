@@ -28,50 +28,58 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     }
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
             throws ServletException, IOException {
 
+        String path = request.getRequestURI();
 
-        String path = request.getServletPath();
-
-        if (path.equals("/api/perspectia/auth/login") ||
-                path.equals("/api/perspectia/auth/signup") ||
-                path.equals("/api/perspectia/auth/verify/email") ||
-                path.equals("/api/perspectia/auth/resend/otp") ||
-                path.equals("/api/perspectia/auth/google-login") ||
-                path.equals("/api/perspectia/auth/github-login") ||
-                path.equals("/api/perspectia/auth/token/refresh")) {
+        if (path.startsWith("/api/perspectia/auth")) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        String email = null;
         String token = null;
 
-        if(request.getCookies() != null) {
-            for(Cookie cookie : request.getCookies()) {
-                if("token".equals(cookie.getName())) {
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("token".equals(cookie.getName())) {
                     token = cookie.getValue();
                     break;
                 }
             }
         }
 
-        if (token != null) {
-            email = jwtHelper.getEmailFromToken(token);
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
-                if (!(jwtHelper.isTokenExpired(token))) {
-                    UsernamePasswordAuthenticationToken usernamePasswordAuthenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    usernamePasswordAuthenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(usernamePasswordAuthenticationToken);
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
-                } else {
-                    System.out.println("Token is expired or user details not found.");
-                }
+        try {
+            String email = jwtHelper.getEmailFromToken(token);
+
+            if (email != null &&
+                    SecurityContextHolder.getContext().getAuthentication() == null &&
+                    !jwtHelper.isTokenExpired(token)) {
+
+                UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                UsernamePasswordAuthenticationToken authToken =
+                        new UsernamePasswordAuthenticationToken(
+                                userDetails, null, userDetails.getAuthorities());
+
+                authToken.setDetails(
+                        new WebAuthenticationDetailsSource().buildDetails(request));
+
+                SecurityContextHolder.getContext().setAuthentication(authToken);
             }
 
+        } catch (Exception e) {
+            //Invalid token
         }
+
         filterChain.doFilter(request, response);
     }
+
 }
