@@ -66,7 +66,7 @@ public class WebConfig {
                 "https://perspectia-frontend.vercel.app"
         ));
 
-        config.setAllowedHeaders(Arrays.asList("*"));
+        config.addAllowedHeader("*");
 
         config.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"
