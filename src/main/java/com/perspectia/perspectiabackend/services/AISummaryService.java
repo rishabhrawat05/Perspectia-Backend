@@ -8,6 +8,7 @@ import com.perspectia.perspectiabackend.repositories.AISummaryRepository;
 import com.perspectia.perspectiabackend.repositories.PerspectiveRepository;
 import com.perspectia.perspectiabackend.repositories.TopicRepository;
 import com.perspectia.perspectiabackend.responses.AISummaryResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
@@ -77,18 +78,23 @@ public class AISummaryService {
 
 
     @Scheduled(cron = "0 0 21 * * ?", zone = "Asia/Kolkata")
+    @Transactional
     public void generateSummary() {
+
+
 
         ZoneId IST = ZoneId.of("Asia/Kolkata");
 
         Optional<Topic> topicOpt =
                 topicRepository.findByTopicDate(LocalDate.now(IST));
 
+
+
         if (topicOpt.isEmpty()) return;
 
         Topic topic = topicOpt.get();
 
-        if (summaryRepository.findByTopicId(topic.getId()).isEmpty()) return;
+        if (summaryRepository.findByTopicId(topic.getId()).isPresent()) return;
 
         List<Perspective> validPerspectives =
                 perspectiveRepository.findByTopicId(topic.getId())
@@ -96,16 +102,21 @@ public class AISummaryService {
                         .filter(p -> p.getContent().length() > 50)
                         .toList();
 
+
         if (validPerspectives.size() < 3) return;
 
         String prompt = buildPrompt(topic.getTitle(), validPerspectives);
 
+
+
         String summary;
         try {
             summary = summarize(prompt);
+
         } catch (Exception e) {
             return;
         }
+
 
         if (summary == null || summary.length() < 100) return;
 
