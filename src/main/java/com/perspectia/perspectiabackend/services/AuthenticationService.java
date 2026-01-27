@@ -131,6 +131,7 @@ public class AuthenticationService {
     public String signup(SignupRequest signupRequest) {
         Optional<User> optUser = userRepository.findByEmail(signupRequest.getEmail());
         if (optUser.isPresent()) {
+            System.out.println("User Already Exsists");
             throw new UserAlreadyExistsByEmailException("User Already Exists with the Gmail");
         }
         String encodedPassword = passwordEncoder.bCryptPasswordEncoder().encode(signupRequest.getPassword());
@@ -148,6 +149,7 @@ public class AuthenticationService {
         user.setAuthProviders(new HashSet<>());
         user.getAuthProviders().add("PASSWORD");
         userRepository.save(user);
+        System.out.print("User saved");
         emailUtility.sendEmail(signupRequest.getEmail(), "Otp Verification for Perspectia",
                 "Otp for Verification is:" + otp);
         return "User Signup Successfull";
