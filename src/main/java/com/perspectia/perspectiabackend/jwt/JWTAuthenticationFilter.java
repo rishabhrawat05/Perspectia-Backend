@@ -35,7 +35,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getRequestURI();
 
-        if (path.startsWith("/api/perspectia/auth")) {
+        if (path.startsWith("/api/perspectia/auth/") && !path.equals("/api/perspectia/auth/me")) {
             filterChain.doFilter(request, response);
             return;
         }

@@ -35,7 +35,8 @@ public class WebConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                        .requestMatchers("/api/perspectia/auth/**").permitAll()
+                        .requestMatchers("/api/perspectia/auth/me").authenticated()
+                        .requestMatchers("/api/perspectia/auth/signup", "/api/perspectia/auth/login", "/api/perspectia/auth/verify/email", "/api/perspectia/auth/resend/otp", "/api/perspectia/auth/logout", "/api/perspectia/auth/refreshtoken/generate").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

@@ -84,7 +84,7 @@ public class AuthenticationController {
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
             return ResponseEntity.ok(true);
         }
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(false);
+        return ResponseEntity.ok(false);
     }
 
     @GetMapping("/me")
