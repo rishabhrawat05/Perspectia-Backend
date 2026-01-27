@@ -48,10 +48,16 @@ public class WebConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOrigin("https://perspectia-frontend.vercel.app");
-        config.addAllowedOrigin("http://localhost:5173");
-        config.addAllowedHeader("*");
-        config.addAllowedMethod("*");
+        
+        // Use setAllowedOriginPatterns instead of addAllowedOrigin
+        config.setAllowedOriginPatterns(Arrays.asList(
+            "https://perspectia-frontend.vercel.app",
+            "https://*.vercel.app",  // Allow all Vercel preview deployments
+            "http://localhost:5173"
+        ));
+        
+        config.setAllowedHeaders(Arrays.asList("*"));
+        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"));
         config.setExposedHeaders(Arrays.asList("Authorization", "Access-Control-Allow-Origin", "Access-Control-Allow-Credentials"));
         config.setMaxAge(3600L);
 
