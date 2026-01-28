@@ -1,6 +1,13 @@
 package com.perspectia.perspectiabackend.email;
 
 
+import com.sendgrid.Method;
+import com.sendgrid.Request;
+import com.sendgrid.Response;
+import com.sendgrid.SendGrid;
+import com.sendgrid.helpers.mail.Mail;
+import com.sendgrid.helpers.mail.objects.Content;
+import com.sendgrid.helpers.mail.objects.Email;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.SimpleMailMessage;
@@ -11,6 +18,10 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EmailUtility {
+
+
+    @Value("${spring.sendgrid.api-key}")
+    private String SENDGRID_API_KEY;
 
     private JavaMailSender javaMailSender;
 
@@ -24,16 +35,33 @@ public class EmailUtility {
 
     @Async
     public void sendEmail(String to, String subject, String body) {
-        try {
-            SimpleMailMessage message = new SimpleMailMessage();
-            message.setFrom(email);
-            message.setTo(to);
-            message.setSubject(subject);
-            message.setText(body);
-            javaMailSender.send(message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+
+            if (SENDGRID_API_KEY == null || SENDGRID_API_KEY.isEmpty()) {
+                System.err.println("SendGrid API key not set! Cannot send email.");
+                return;
+            }
+            Email from = new Email(email); // your verified sender
+            Email recipient = new Email(to);
+            Content content = new Content("text/plain", body);
+            Mail mail = new Mail(from, subject, recipient, content);
+
+            SendGrid sg = new SendGrid(SENDGRID_API_KEY);
+            Request request = new Request();
+
+            try {
+                request.setMethod(Method.POST);
+                request.setEndpoint("mail/send");
+                request.setBody(mail.build());
+                Response response = sg.api(request);
+
+                System.out.println("SendGrid email sent to " + to + " | Status: " + response.getStatusCode());
+                if (response.getStatusCode() >= 400) {
+                    System.err.println("SendGrid API returned error: " + response.getBody());
+                }
+            } catch (Exception ex) {
+                System.err.println("Failed to send email via SendGrid API: " + ex.getMessage());
+                ex.printStackTrace();
+            }
     }
 
     @Async
